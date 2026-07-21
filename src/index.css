@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: #ffffff;
+  background-color: #0f212e;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body, #root { min-height: 100%; background-color: #0f212e; }
+
+/* Stake-style thin scrollbar */
+.thin-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+.thin-scroll::-webkit-scrollbar-track { background: transparent; }
+.thin-scroll::-webkit-scrollbar-thumb { background: #2f4553; border-radius: 999px; }
+.thin-scroll::-webkit-scrollbar-thumb:hover { background: #557086; }
+
+/* hide native scrollbar but keep scroll */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@layer utilities {
+  .glow-light-legendary {
+    box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.4), inset 0 0 4px rgba(251, 191, 36, 0.2);
+  }
+
+  .glow-light-epic {
+    box-shadow: 0 0 8px 2px rgba(192, 132, 252, 0.4), inset 0 0 4px rgba(192, 132, 252, 0.2);
+  }
+
+  .glow-light-rare {
+    box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.4), inset 0 0 4px rgba(96, 165, 250, 0.2);
+  }
+}
+
+
+.custom-scroll {
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255,255,255,0.7), 0 0 40px rgba(255,200,0,0.6);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,100,200,0.8);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s infinite ease-in-out;
+}
+
+
