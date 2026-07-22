@@ -1,9 +1,9 @@
 import { useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
-import { X, ChevronDown, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { GameContext } from '../context/GameContext';
-import { login, signup, me, saveConfig, getConfig } from '../aggregator/api.js';
+import { login, signup, me } from '../aggregator/api.js';
 
 const Field = ({ label, ...props }) => (
   <label className="flex flex-col gap-1 text-sm">
@@ -19,8 +19,6 @@ const Field = ({ label, ...props }) => (
 const AuthModal = () => {
   const { authModal, setAuthModal, setAuth, setAccount } = useContext(GameContext);
   const mode = authModal; // 'login' | 'register' | false
-  const [operatorUrl, setOperatorUrl] = useState(getConfig().operatorUrl);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [form, setForm] = useState({ username: '', email: '', password: '', usernameOrEmail: '' });
   const [busy, setBusy] = useState(false);
 
@@ -31,7 +29,6 @@ const AuthModal = () => {
   const submit = async () => {
     setBusy(true);
     try {
-      saveConfig({ operatorUrl });
       const out = mode === 'login'
         ? await login({ usernameOrEmail: form.usernameOrEmail, password: form.password })
         : await signup({ username: form.username, email: form.email, password: form.password });
@@ -87,18 +84,6 @@ const AuthModal = () => {
               <Field label="Username or Email" value={form.usernameOrEmail} onChange={upd('usernameOrEmail')} placeholder="yourname" />
               <Field label="Password" type="password" value={form.password} onChange={upd('password')} placeholder="••••••••" />
             </>
-          )}
-
-          {/* advanced: operator backend URL (test harness) */}
-          <button
-            onClick={() => setShowAdvanced((s) => !s)}
-            className="flex items-center gap-1 text-xs text-stake-text hover:text-white w-fit">
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
-            Advanced
-          </button>
-          {showAdvanced && (
-            <Field label="Operator Backend URL" value={operatorUrl}
-              onChange={(e) => setOperatorUrl(e.target.value)} placeholder="http://localhost:5001" />
           )}
 
           <button

@@ -1,34 +1,25 @@
 import { useContext, useEffect, useState, useMemo } from 'react';
 import { Sparkles, TrendingUp, Search, Gift, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GameContext } from '../context/GameContext';
 import { getToken, getGames } from '../aggregator/api.js';
 import GameRow from '../components/GameRow';
 import CasinoGameCard from '../components/CasinoGameCard';
-import useLaunch from '../hooks/useLaunch';
-import { useSearchParams } from 'react-router-dom';
 
 const Home = () => {
   const { setAuthModal } = useContext(GameContext);
-  const { launch, launching } = useLaunch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [games, setGames] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ok | error
   const [err, setErr] = useState('');
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(searchParams.get('q') || '');
   const [provider, setProvider] = useState('All');
   const loggedIn = !!getToken();
 
-
-  
-
-  const [searchParams] = useSearchParams();
-
-  const token = searchParams.get("token");
-  const socket = searchParams.get("socket");
-
-  console.log('token-------------------', token)
-  console.log('socket-----------------', socket)
-
-
+  // Keep the lobby search in sync with the navbar search (?q=).
+  useEffect(() => { setQ(searchParams.get('q') || ''); }, [searchParams]);
 
   const load = async () => {
     setStatus('loading');
@@ -41,10 +32,8 @@ const Home = () => {
       setStatus('error');
     }
   };
-
   useEffect(() => { load(); }, []);
 
-  // Category chips are DATA-DRIVEN: All + distinct providers from the aggregator.
   const providers = useMemo(
     () => ['All', ...Array.from(new Set(games.map((g) => g.provider).filter(Boolean)))],
     [games]
@@ -62,10 +51,8 @@ const Home = () => {
 
   const featured = useMemo(() => games.slice(0, 12), [games]);
 
-  const play = (code) => {
-    if (!getToken()) { setAuthModal('login'); return; }
-    launch(code);
-  };
+  // Click a game → open its detail page (Launch / Demo live there).
+  const open = (code) => navigate(`/game/${code}`);
 
   return (
     <div className="p-4 sm:p-6 max-w-[1400px] mx-auto">
@@ -85,9 +72,9 @@ const Home = () => {
           </p>
           {loggedIn ? (
             featured[0] && (
-              <button onClick={() => play(featured[0].game_code)}
+              <button onClick={() => open(featured[0].game_code)}
                 className="h-11 px-6 rounded font-bold bg-stake-green hover:bg-stake-greenh text-stake-900">
-                Play now
+                Browse games
               </button>
             )
           ) : (
@@ -113,7 +100,6 @@ const Home = () => {
           className="bg-transparent outline-none text-sm text-white placeholder:text-stake-500 w-full" />
       </div>
 
-      {/* loading / error / empty states */}
       {status === 'loading' && (
         <div className="flex flex-col items-center justify-center py-20 text-stake-text">
           <Loader2 className="w-8 h-8 animate-spin mb-3" /> Loading games…
@@ -151,10 +137,9 @@ const Home = () => {
             ))}
           </div>
 
-          {/* featured carousel (only when no active filter/search) */}
           {provider === 'All' && !q.trim() && (
             <>
-              <GameRow icon={Sparkles} title="Featured" games={featured} onPlay={play} launching={launching} />
+              <GameRow icon={Sparkles} title="Featured" games={featured} onPlay={open} launching={null} />
               <h2 className="flex items-center gap-2 text-white font-bold text-lg mb-3">
                 <TrendingUp className="w-5 h-5 text-stake-text" /> All Games
                 <span className="text-stake-text font-normal text-sm">({games.length})</span>
@@ -162,13 +147,12 @@ const Home = () => {
             </>
           )}
 
-          {/* full grid */}
           {filtered.length === 0 ? (
             <p className="text-stake-text py-8 text-center">No games match “{q}”.</p>
           ) : (
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {filtered.map((g) => (
-                <CasinoGameCard key={g.game_code} game={g} onPlay={play} launching={launching} />
+                <CasinoGameCard key={g.game_code} game={g} onPlay={open} launching={null} />
               ))}
             </div>
           )}

@@ -1,6 +1,6 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Search, Wallet, ChevronDown, User, LogOut, Dice5, Trophy } from 'lucide-react';
+import { Menu, Search, Wallet, User, LogOut, Dice5 } from 'lucide-react';
 import { GameContext } from '../../context/GameContext';
 import { logout, getToken } from '../../aggregator/api.js';
 
@@ -10,10 +10,12 @@ const Navbar = () => {
     sidebarOpen, setSidebarOpen,
   } = useContext(GameContext);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [tab, setTab] = useState('casino');
+  const [search, setSearch] = useState('');
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const loggedIn = !!getToken();
+
+  const runSearch = () => navigate(`/?q=${encodeURIComponent(search.trim())}`);
 
   useEffect(() => {
     const h = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
@@ -44,24 +46,21 @@ const Navbar = () => {
         <span className="hidden sm:block font-extrabold text-white text-lg tracking-tight">Slot<span className="text-stake-green"> Play</span></span>
       </button>
 
-      {/* center: Casino / Sports */}
+      {/* center: Casino (only casino in this platform) */}
       <nav className="hidden md:flex items-center gap-1 ml-2 bg-stake-900 rounded-full p-1">
-        <button onClick={() => setTab('casino')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'casino' ? 'bg-stake-600 text-white' : 'text-stake-text hover:text-white'}`}>
+        <button onClick={() => navigate('/')}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold bg-stake-600 text-white">
           <Dice5 className="w-4 h-4" /> Casino
-        </button>
-        <button onClick={() => setTab('sports')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'sports' ? 'bg-stake-600 text-white' : 'text-stake-text hover:text-white'}`}>
-          <Trophy className="w-4 h-4" /> Sports
         </button>
       </nav>
 
-      {/* search */}
+      {/* search — Enter (or the icon) jumps to the filtered lobby */}
       <div className="flex-1 max-w-md hidden lg:flex items-center gap-2 bg-stake-900 rounded-full px-4 h-10 mx-2">
-        <Search className="w-4 h-4 text-stake-text" />
+        <button onClick={runSearch} aria-label="Search"><Search className="w-4 h-4 text-stake-text hover:text-white" /></button>
         <input placeholder="Search games"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') runSearch(); }}
           className="bg-transparent outline-none text-sm text-white placeholder:text-stake-500 w-full" />
       </div>
 

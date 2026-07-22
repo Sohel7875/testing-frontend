@@ -4,8 +4,12 @@
 const CFG_KEY = 'opCfg';
 const TOKEN_KEY = 'opToken';
 
+// ── Operator backend base URL — SINGLE SOURCE OF TRUTH. Change it here. ──
+// Not read from localStorage anymore, so it can't drift per browser.
+// const OPERATOR_BASE_URL = 'http://localhost:5001';
+const OPERATOR_BASE_URL = 'https://operator-backend-sez2.onrender.com'; // deployed
+
 const DEFAULTS = {
-  operatorUrl: 'https://operator-backend-sez2.onrender.com',
   gameCode: 'duck_hunt_96',
   currency: 'USD',
 };
@@ -28,7 +32,7 @@ export const setToken = (t) => (t ? localStorage.setItem(TOKEN_KEY, t) : localSt
 export const logout = () => setToken('');
 
 function base() {
-  return getConfig().operatorUrl.replace(/\/$/, '');
+  return OPERATOR_BASE_URL.replace(/\/$/, '');
 }
 
 async function req(method, path, body, auth = true) {
@@ -64,8 +68,13 @@ export const getTransactions = () => req('GET', '/api/transactions');
 /** Aggregator-approved games for this operator (proxied + signed by the operator backend). */
 export const getGames = () => req('GET', '/api/games');
 
-/** Launch a game for the logged-in player → { launchUrl, token, socketUrl }. */
-export async function launchGame({ gameCode, currency } = {}) {
+/** Launch a game for the logged-in player → { launchUrl, token, socketUrl }.
+ *  mode: 'real' (default) or 'demo' (fake-money sandbox wallet). */
+export async function launchGame({ gameCode, currency, mode = 'real' } = {}) {
   const cfg = getConfig();
-  return req('POST', '/api/launch', { gameCode: gameCode || cfg.gameCode, currency: currency || cfg.currency });
+  return req('POST', '/api/launch', {
+    gameCode: gameCode || cfg.gameCode,
+    currency: currency || cfg.currency,
+    mode,
+  });
 }
