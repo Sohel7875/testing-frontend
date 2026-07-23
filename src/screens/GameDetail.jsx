@@ -52,11 +52,6 @@ export default function GameDetail() {
 
   // ── the game, running in an iframe ──────────────────────────────
   if (iframeSrc) {
-    // Letterbox to the game's aspect ratio on black, so leftover space is dark
-    // (not the game's own white). ratio from the catalog, default 16:9.
-    const [rw, rh] = String(game?.aspectRatio || '16:9').split(':').map(Number);
-    const ar = rw > 0 && rh > 0 ? `${rw}/${rh}` : '16/9';
-    const arNum = rw > 0 && rh > 0 ? rw / rh : 16 / 9;
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col">
         <div className="h-12 shrink-0 flex items-center justify-between px-4 bg-stake-900 border-b border-stake-600">
@@ -66,13 +61,11 @@ export default function GameDetail() {
             <X className="w-4 h-4" /> Close
           </button>
         </div>
-        <div className="flex-1 bg-black overflow-hidden flex items-center justify-center">
+        <div className="flex-1 bg-black overflow-hidden">
           <iframe
             title={title}
             src={iframeSrc}
-            scrolling="no"
-            className="border-0 block"
-            style={{ aspectRatio: ar, width: `calc(${arNum} * (100vh - 3rem))`, maxWidth: '100%', maxHeight: '100%' }}
+            className="w-full h-full border-0 block"
             allow="autoplay; fullscreen"
           />
         </div>
