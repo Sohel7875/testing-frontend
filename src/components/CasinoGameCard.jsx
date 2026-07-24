@@ -37,7 +37,7 @@ const CasinoGameCard = ({ game, onPlay, launching }) => {
           src={poster}
           alt={title}
           onError={() => setImgOk(false)}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3">

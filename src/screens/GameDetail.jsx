@@ -31,7 +31,7 @@ export default function GameDetail() {
 
   const game = useMemo(() => (games || []).find((g) => g.game_code === code), [games, code]);
   const title = game?.name || code;
-  const poster = game?.gamePoster || game?.thumbnail;
+  const poster = game?.thumbnail || game?.gamePoster;
   const hue = hueOf(code);
   const bg = `linear-gradient(150deg, hsl(${hue} 70% 25%) 0%, hsl(${(hue + 40) % 360} 65% 14%) 100%)`;
 
@@ -97,7 +97,7 @@ export default function GameDetail() {
                 />
               ) : (
                 <div className="absolute inset-0" style={{ background: bg }}>
-                  {poster && <img src={poster} alt={title} className="absolute inset-0 w-full h-full object-cover" />}
+                  {poster && <img src={poster} alt={title} className="absolute inset-0 w-full h-full object-contain" />}
                   <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-4 px-4">
                     <div className="text-white font-extrabold text-xl sm:text-2xl drop-shadow">{title}</div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
