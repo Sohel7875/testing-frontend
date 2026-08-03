@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import { X, Wallet, Loader2 } from 'lucide-react';
 import { GameContext } from '../context/GameContext';
-import { deposit, me } from '../aggregator/api.js';
+import { deposit, withdraw, me } from '../aggregator/api.js';
 
 const QUICK = [100, 500, 1000, 5000];
 
@@ -25,6 +25,23 @@ const WalletModal = () => {
       toast.success(`Deposited ${amt}. Balance ${out.balance} ${out.currency}`, { containerId: 'main-toast' });
     } catch (err) {
       // fall back to refetch in case the response shape differs
+      try { setAccount(await me()); } catch { /* ignore */ }
+      toast.error(err.message, { containerId: 'main-toast' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // amount: a number, or 'all' to drain the wallet to 0 (for testing 0-balance).
+  const doWithdraw = async (amt) => {
+    if (amt !== 'all' && (!Number(amt) || Number(amt) <= 0))
+      return toast.error('Enter a valid amount', { containerId: 'main-toast' });
+    setBusy(true);
+    try {
+      const out = await withdraw(amt === 'all' ? 'all' : Number(amt));
+      setAccount((a) => ({ ...(a || {}), balance: out.balance, currency: out.currency }));
+      toast.success(`Withdrew. Balance ${out.balance} ${out.currency}`, { containerId: 'main-toast' });
+    } catch (err) {
       try { setAccount(await me()); } catch { /* ignore */ }
       toast.error(err.message, { containerId: 'main-toast' });
     } finally {
@@ -72,14 +89,27 @@ const WalletModal = () => {
             </div>
           </div>
 
-          <button onClick={doDeposit} disabled={busy}
-            className={`py-3 rounded font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-              busy ? 'bg-stake-600 text-stake-text' : 'bg-stake-green hover:bg-stake-greenh text-stake-900'}`}>
-            {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-            {busy ? 'Processing…' : 'Deposit'}
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={doDeposit} disabled={busy}
+              className={`py-3 rounded font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                busy ? 'bg-stake-600 text-stake-text' : 'bg-stake-green hover:bg-stake-greenh text-stake-900'}`}>
+              {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+              {busy ? '…' : 'Deposit'}
+            </button>
+            <button onClick={() => doWithdraw(amount)} disabled={busy}
+              className={`py-3 rounded font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                busy ? 'bg-stake-600 text-stake-text' : 'bg-stake-700 border border-stake-600 text-white hover:bg-stake-600'}`}>
+              {busy ? '…' : 'Withdraw'}
+            </button>
+          </div>
+
+          <button onClick={() => doWithdraw('all')} disabled={busy}
+            className={`py-2 rounded font-semibold text-xs transition-colors ${
+              busy ? 'bg-stake-600 text-stake-text' : 'bg-red-500/15 border border-red-500/40 text-red-300 hover:bg-red-500/25'}`}>
+            Withdraw all → 0 balance (test)
           </button>
           <p className="text-[11px] text-stake-text text-center">
-            Test wallet — deposits credit the operator balance used for real bets.
+            Test wallet — deposits credit, withdrawals debit the operator balance used for real bets.
           </p>
         </div>
       </div>

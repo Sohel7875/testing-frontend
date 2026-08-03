@@ -63,6 +63,8 @@ export async function login({ usernameOrEmail, password }) {
 // ── player ──
 export const me = () => req('GET', '/api/me');
 export const deposit = (amount) => req('POST', '/api/deposit', { amount });
+// amount can be a number or the string 'all' to drain the wallet to 0.
+export const withdraw = (amount) => req('POST', '/api/withdraw', { amount });
 export const getTransactions = () => req('GET', '/api/transactions');
 
 /** Aggregator-approved games for this operator (proxied + signed by the operator backend). */
