@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, FlaskConical, Loader2, X, Maximize2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Play, FlaskConical, Loader2, X, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { GameContext } from '../context/GameContext';
 import { getGames, getToken, launchGame } from '../aggregator/api.js';
@@ -21,6 +21,18 @@ export default function GameDetail() {
   const [launching, setLaunching] = useState(null); // 'real' | 'demo' | null
   const [iframeSrc, setIframeSrc] = useState('');
   const playerRef = useRef(null);
+
+  // Presentation is CONTAINER-DRIVEN, not device-detected. The game is served in a
+  // responsive inline frame and reflows itself (its own media queries) to whatever
+  // size the frame is — shrink the window and it switches to its mobile skin live,
+  // exactly like stake.com. No device flag is passed anywhere. Fullscreen is a pure
+  // user action available on every platform.
+  const [isFs, setIsFs] = useState(false);
+  useEffect(() => {
+    const onFs = () => setIsFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
 
   const load = async () => {
     setStatus('loading');
@@ -49,10 +61,24 @@ export default function GameDetail() {
     }
   };
 
-  const goFullscreen = () => {
+  // Toggle native fullscreen on the inline player. On iOS Safari (which won't
+  // fullscreen arbitrary elements) it's a harmless no-op; the game is still fully
+  // usable inline, so there's no device-specific overlay to maintain.
+  const toggleFullscreen = () => {
     const el = playerRef.current;
-    if (el?.requestFullscreen) el.requestFullscreen().catch(() => {});
+    if (document.fullscreenElement) { document.exitFullscreen?.(); return; }
+    (el?.requestFullscreen || el?.webkitRequestFullscreen)?.call(el)?.catch?.(() => { });
   };
+
+  const closeGame = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {});
+    setIframeSrc('');
+  };
+
+
+
+
+
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-6">
@@ -81,12 +107,16 @@ export default function GameDetail() {
           Game <span className="text-white font-mono">{code}</span> isn't in this operator's catalog.
         </div>
       )}
-
+      
       {status === 'ok' && game && (
         <>
           {/* ── player ─────────────────────────────────────────── */}
           <div className="rounded-xl overflow-hidden border border-stake-600 bg-black shadow-card">
-            <div ref={playerRef} className="relative w-full aspect-video bg-black">
+            {/* Height-driven responsive frame: full column width × a viewport-based
+                height. Wide window → landscape box (desktop skin); narrow window →
+                tall box (the game's mobile skin). The game reflows itself — we only
+                give it a rectangle. Fullscreen fills the screen. */}
+            <div ref={playerRef} className="relative w-full bg-black" style={{ height: 'min(80vh, 900px)' }}>
               {iframeSrc ? (
                 <iframe
                   title={title}
@@ -122,14 +152,14 @@ export default function GameDetail() {
               <span className="text-white text-sm font-semibold truncate">🎰 {title}</span>
               <div className="flex items-center gap-1">
                 {iframeSrc && (
-                  <button onClick={() => setIframeSrc('')} title="Close game"
+                  <button onClick={closeGame} title="Close game"
                     className="h-8 px-3 rounded text-stake-text hover:text-white hover:bg-stake-700 text-sm flex items-center gap-1.5">
                     <X className="w-4 h-4" /> Close
                   </button>
                 )}
-                <button onClick={goFullscreen} title="Fullscreen"
+                <button onClick={toggleFullscreen} title="Fullscreen"
                   className="h-8 w-8 rounded text-stake-text hover:text-white hover:bg-stake-700 flex items-center justify-center">
-                  <Maximize2 className="w-4 h-4" />
+                  {isFs ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
               </div>
             </div>
