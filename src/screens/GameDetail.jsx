@@ -112,11 +112,14 @@ export default function GameDetail() {
         <>
           {/* ── player ─────────────────────────────────────────── */}
           <div className="rounded-xl overflow-hidden border border-stake-600 bg-black shadow-card">
-            {/* Height-driven responsive frame: full column width × a viewport-based
-                height. Wide window → landscape box (desktop skin); narrow window →
-                tall box (the game's mobile skin). The game reflows itself — we only
-                give it a rectangle. Fullscreen fills the screen. */}
-            <div ref={playerRef} className="relative w-full bg-black" style={{ height: 'min(80vh, 900px)' }}>
+            {/* Aspect-locked frame, switched by a CSS breakpoint (no JS device
+                detection): 9:16 portrait on phones/tablets, 16:9 landscape on
+                laptop/desktop (lg ≥ 1024px). Width is derived so the box is sized to
+                fit the viewport height AND keep the exact ratio (no letterbox from a
+                clamped max-height), centered. The game reflows itself into it. */}
+            <div ref={playerRef}
+              className="relative bg-black mx-auto aspect-[9/16] w-[min(100%,calc(85vh*9/16))]
+                         lg:aspect-video lg:w-[min(100%,calc(80vh*16/9))]">
               {iframeSrc ? (
                 <iframe
                   title={title}
