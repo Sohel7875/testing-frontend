@@ -37,7 +37,8 @@ export default function Launcher() {
   const [result, setResult] = useState(null); // { token, launchUrl, socketUrl }
   const [error, setError] = useState('');
   const [showCfg, setShowCfg] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [copied, setCopied] = useState(''); // which field was copied
 
   useEffect(() => { setShowCfg(!cfg.adminKey); }, []); // force setup on first use
 
@@ -70,10 +71,13 @@ export default function Launcher() {
     }
   };
 
-  const copy = async () => {
-    if (!result?.launchUrl) return;
-    try { await navigator.clipboard.writeText(result.launchUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* ignore */ }
+  const copy = async (text, which) => {
+    if (!text) return;
+    try { await navigator.clipboard.writeText(text); setCopied(which); setTimeout(() => setCopied(''), 1500); } catch { /* ignore */ }
   };
+
+  // The query string the game is launched with: token=…&socket=…&game=…&lang=en
+  const launchParams = useMemo(() => (result?.launchUrl?.split('?')[1] || ''), [result]);
 
   // A QR of the launch link, so a second phone can scan it too. Uses a public
   // QR image service — the launchUrl (with token) is the only thing encoded.
@@ -107,8 +111,14 @@ export default function Launcher() {
             </div>
             <div>
               <span className={label}>Admin key (saved on this device only)</span>
-              <input className={field} type="password" placeholder="X-Admin-Key" value={cfg.adminKey}
-                onChange={(e) => saveCfg({ adminKey: e.target.value })} />
+              <div className="relative">
+                <input className={`${field} pr-16`} type={showKey ? 'text' : 'password'} placeholder="X-Admin-Key"
+                  value={cfg.adminKey} onChange={(e) => saveCfg({ adminKey: e.target.value })} />
+                <button type="button" onClick={() => setShowKey((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-stake-blue hover:text-white px-2 py-1">
+                  {showKey ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -145,13 +155,25 @@ export default function Launcher() {
               className="py-3 rounded-lg font-extrabold text-center bg-stake-blue hover:opacity-90 text-white">
               ▶ Open game
             </a>
-            <button onClick={copy}
+
+            <div>
+              <span className={label}>Launch params (token=…&socket=…&game=…&lang=en)</span>
+              <div className="font-mono text-xs break-all bg-stake-900 border border-stake-600 rounded p-2 text-white">
+                {launchParams}
+              </div>
+              <button onClick={() => copy(launchParams, 'params')}
+                className="mt-2 w-full py-2.5 rounded-lg font-semibold bg-stake-green hover:bg-stake-greenh text-stake-900 text-sm">
+                {copied === 'params' ? 'Copied ✓' : 'Copy launch params'}
+              </button>
+            </div>
+
+            <button onClick={() => copy(result.launchUrl, 'url')}
               className="py-2.5 rounded-lg font-semibold bg-stake-700 hover:bg-stake-600 text-white text-sm">
-              {copied ? 'Copied ✓' : 'Copy launch link'}
+              {copied === 'url' ? 'Copied ✓' : 'Copy full launch link'}
             </button>
 
             <div>
-              <span className={label}>Token</span>
+              <span className={label}>Token only</span>
               <div className="font-mono text-xs break-all bg-stake-900 border border-stake-600 rounded p-2 text-stake-text">
                 {result.token}
               </div>
