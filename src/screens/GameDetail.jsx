@@ -81,7 +81,7 @@ export default function GameDetail() {
 
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-6">
+    <div className="w-full px-4 py-4 sm:py-6">
       <button onClick={() => navigate('/')}
         className="flex items-center gap-1.5 text-stake-text hover:text-white text-sm mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to lobby
@@ -112,14 +112,11 @@ export default function GameDetail() {
         <>
           {/* ── player ─────────────────────────────────────────── */}
           <div className="rounded-xl overflow-hidden border border-stake-600 bg-black shadow-card">
-            {/* Aspect-locked frame, switched by a CSS breakpoint (no JS device
-                detection): 9:16 portrait on phones/tablets, 16:9 landscape on
-                laptop/desktop (lg ≥ 1024px). Width is derived so the box is sized to
-                fit the viewport height AND keep the exact ratio (no letterbox from a
-                clamped max-height), centered. The game reflows itself into it. */}
+            {/* Fills the full available width, aspect held: 9:16 on phones/tablets,
+                16:9 on laptop/desktop (lg ≥ 1024px). No max-width / no centering, so
+                there's no gap — height just follows the width at the locked ratio. */}
             <div ref={playerRef}
-              className="relative bg-black mx-auto aspect-[9/16] w-[min(100%,calc(85vh*9/16))]
-                         lg:aspect-video lg:w-[min(100%,calc(80vh*16/9))]">
+              className="relative w-full bg-black aspect-[9/16] lg:aspect-video">
               {iframeSrc ? (
                 <iframe
                   title={title}
