@@ -111,7 +111,11 @@ export default function GameDetail() {
       {status === 'ok' && game && (
         <>
           {/* ── player ─────────────────────────────────────────── */}
-          <div className="rounded-xl overflow-hidden border border-stake-600 bg-black shadow-card">
+          {/* Mobile: full-bleed — -mx-4 cancels the page's px-4 so the frame
+              spans the whole viewport width, no border/rounding. lg+: padded,
+              rounded card. Height is always derived from width by the aspect
+              lock below, so 9:16 (mobile) / 16:9 (desktop) is preserved. */}
+          <div className="-mx-4 lg:mx-0 rounded-none lg:rounded-xl overflow-hidden border-0 lg:border border-stake-600 bg-black lg:shadow-card">
             {/* Fills the full available width, aspect held: 9:16 on phones/tablets,
                 16:9 on laptop/desktop (lg ≥ 1024px). No max-width / no centering, so
                 there's no gap — height just follows the width at the locked ratio. */}
