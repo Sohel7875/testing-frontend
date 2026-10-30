@@ -43,10 +43,11 @@ export default function GameDetail() {
 
   const game = useMemo(() => (games || []).find((g) => g.game_code === code), [games, code]);
   const title = game?.name || code;
-  const poster = game?.thumbnail || game?.gamePoster;
+  const poster = game?.backgroundImage || game?.gamePoster;
   const hue = hueOf(code);
   const bg = `linear-gradient(150deg, hsl(${hue} 70% 25%) 0%, hsl(${(hue + 40) % 360} 65% 14%) 100%)`;
 
+  console.log('game---------',game)
   const start = async (mode) => {
     if (!getToken()) { setAuthModal('login'); return; }
     setLaunching(mode);

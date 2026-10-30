@@ -27,7 +27,7 @@ const CasinoGameCard = ({ game, onPlay, launching }) => {
     <button
       onClick={() => onPlay(code)}
       disabled={isLaunching}
-      className="group relative w-full aspect-[3/4] rounded-lg overflow-hidden shadow-card
+      className="group relative w-full aspect-[9/16] rounded-lg overflow-hidden shadow-card
                  ring-1 ring-white/5 transition-transform duration-150 hover:-translate-y-1
                  focus:outline-none focus:ring-2 focus:ring-stake-blue text-left"
       style={{ background: bg }}
@@ -37,7 +37,7 @@ const CasinoGameCard = ({ game, onPlay, launching }) => {
           src={poster}
           alt={title}
           onError={() => setImgOk(false)}
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full "
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3">

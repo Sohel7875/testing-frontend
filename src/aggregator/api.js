@@ -35,17 +35,59 @@ function base() {
   return OPERATOR_BASE_URL.replace(/\/$/, '');
 }
 
+// The operator backend runs on a host that SLEEPS when idle (Render free tier),
+// so the first request after a lull can take 30–60s to cold-start. A single
+// fetch on a slow/mobile network gives up and surfaces "Failed to fetch". To
+// survive that: a generous per-attempt timeout + retry ONLY on network failures
+// (no HTTP response was received → the request never reached the server, so a
+// retry is safe even for POST). Once the box is awake, later calls are instant.
+const ATTEMPT_TIMEOUT_MS = 60000; // cold start can be ~50s
+const MAX_RETRIES = 3;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchWithTimeout(url, opts) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ATTEMPT_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...opts, signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function req(method, path, body, auth = true) {
   const headers = { 'Content-Type': 'application/json' };
   if (auth && getToken()) headers.Authorization = `Bearer ${getToken()}`;
-  const res = await fetch(`${base()}${path}`, {
-    method,
-    headers,
-    body: body == null ? undefined : JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
-  return data;
+  const opts = { method, headers, body: body == null ? undefined : JSON.stringify(body) };
+
+  let lastErr;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetchWithTimeout(`${base()}${path}`, opts);
+      // Got an HTTP response → do NOT retry (a 4xx/5xx is a real answer).
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+      return data;
+    } catch (err) {
+      // Only network-level failures (fetch threw / aborted) are retryable — an
+      // HTTP error above is rethrown here too, so distinguish by err.name/message.
+      const isNetwork = err.name === 'AbortError' || err.name === 'TypeError' || /Failed to fetch|NetworkError|Load failed/i.test(err.message || '');
+      lastErr = isNetwork
+        ? new Error('Server is waking up or unreachable. Please wait a moment and retry.')
+        : err;
+      if (!isNetwork || attempt === MAX_RETRIES) throw lastErr;
+      await sleep(1500 * (attempt + 1)); // back off: 1.5s, 3s, 4.5s while it boots
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Wake the sleeping backend early. Fire-and-forget on app load so by the time the
+ * user submits login/signup the box is already booting (or awake). Never throws.
+ */
+export async function warmUp() {
+  try { await fetchWithTimeout(`${base()}/health`, { method: 'GET' }); } catch { /* best-effort */ }
 }
 
 // ── auth ──
