@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, FlaskConical, Loader2, X, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Play, FlaskConical, Loader2, X, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { GameContext } from '../context/GameContext';
 import { getGames, getToken, launchGame } from '../aggregator/api.js';
@@ -25,15 +25,7 @@ export default function GameDetail() {
   // Presentation is CONTAINER-DRIVEN, not device-detected. The game is served in a
   // responsive inline frame and reflows itself (its own media queries) to whatever
   // size the frame is — shrink the window and it switches to its mobile skin live,
-  // exactly like stake.com. No device flag is passed anywhere. Fullscreen is a pure
-  // user action available on every platform.
-  const [isFs, setIsFs] = useState(false);
-  useEffect(() => {
-    const onFs = () => setIsFs(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
-  }, []);
-
+  // exactly like stake.com. No device flag is passed anywhere.
   const load = async () => {
     setStatus('loading');
     try { setGames(await getGames()); setStatus('ok'); }
@@ -62,17 +54,7 @@ export default function GameDetail() {
     }
   };
 
-  // Toggle native fullscreen on the inline player. On iOS Safari (which won't
-  // fullscreen arbitrary elements) it's a harmless no-op; the game is still fully
-  // usable inline, so there's no device-specific overlay to maintain.
-  const toggleFullscreen = () => {
-    const el = playerRef.current;
-    if (document.fullscreenElement) { document.exitFullscreen?.(); return; }
-    (el?.requestFullscreen || el?.webkitRequestFullscreen)?.call(el)?.catch?.(() => { });
-  };
-
   const closeGame = () => {
-    if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {});
     setIframeSrc('');
   };
 
@@ -162,10 +144,6 @@ export default function GameDetail() {
                     <X className="w-4 h-4" /> Close
                   </button>
                 )}
-                <button onClick={toggleFullscreen} title="Fullscreen"
-                  className="h-8 w-8 rounded text-stake-text hover:text-white hover:bg-stake-700 flex items-center justify-center">
-                  {isFs ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </button>
               </div>
             </div>
           </div>
