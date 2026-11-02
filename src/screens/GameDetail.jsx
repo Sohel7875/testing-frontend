@@ -71,7 +71,9 @@ export default function GameDetail() {
 
 
   return (
-    <div className="w-full px-4 py-4 sm:py-6">
+    // While a game runs on mobile (header hidden), drop the top padding so the
+    // game sits flush at the very top — no dead space. Desktop keeps its spacing.
+    <div className={`w-full px-4 ${iframeSrc ? 'pt-0 pb-4 lg:pt-6 lg:pb-6' : 'py-4 sm:py-6'}`}>
       {/* Hidden on mobile while a game runs (immersive) — exit via the Close
           button on the player's control bar. Always shown on desktop. */}
       <button onClick={() => navigate('/')}
