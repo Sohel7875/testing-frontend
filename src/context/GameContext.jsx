@@ -25,6 +25,10 @@ const GameContextProvidor = ({ children }) => {
   const [walletOpen, setWalletOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // True while a game is launched in the player — used to hide the site header
+  // on mobile for a clean, full-bleed game view (desktop keeps the header).
+  const [immersive, setImmersive] = useState(false);
+
   return (
     <GameContext.Provider
       value={{
@@ -38,6 +42,7 @@ const GameContextProvidor = ({ children }) => {
         authModal, setAuthModal,
         walletOpen, setWalletOpen,
         sidebarOpen, setSidebarOpen,
+        immersive, setImmersive,
       }}
     >
       {children}

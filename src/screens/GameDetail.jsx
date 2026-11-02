@@ -14,7 +14,7 @@ const hueOf = (s = '') => {
 export default function GameDetail() {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { setAuthModal } = useContext(GameContext);
+  const { setAuthModal, setImmersive } = useContext(GameContext);
 
   const [games, setGames] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ok | error
@@ -32,6 +32,13 @@ export default function GameDetail() {
     catch { setStatus('error'); }
   };
   useEffect(() => { load(); }, []);
+
+  // While a game is running, hide the site header on mobile (clean full-bleed
+  // game view). Always restore it when the game closes or we leave the page.
+  useEffect(() => {
+    setImmersive(!!iframeSrc);
+    return () => setImmersive(false);
+  }, [iframeSrc, setImmersive]);
 
   const game = useMemo(() => (games || []).find((g) => g.game_code === code), [games, code]);
   const title = game?.name || code;

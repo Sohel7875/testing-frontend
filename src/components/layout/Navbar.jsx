@@ -7,7 +7,7 @@ import { logout, getToken } from '../../aggregator/api.js';
 const Navbar = () => {
   const {
     account, setAuth, setAccount, setAuthModal, setWalletOpen,
-    sidebarOpen, setSidebarOpen,
+    sidebarOpen, setSidebarOpen, immersive,
   } = useContext(GameContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -32,7 +32,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-stake-800 border-b border-stake-600 flex items-center gap-3 px-3 sm:px-4">
+    <header className={`sticky top-0 z-40 h-16 bg-stake-800 border-b border-stake-600 items-center gap-3 px-3 sm:px-4 ${immersive ? 'hidden lg:flex' : 'flex'}`}>
       {/* left: hamburger + logo */}
       <button
         onClick={() => setSidebarOpen((s) => !s)}
