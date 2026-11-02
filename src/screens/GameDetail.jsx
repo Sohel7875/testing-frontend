@@ -72,8 +72,10 @@ export default function GameDetail() {
 
   return (
     <div className="w-full px-4 py-4 sm:py-6">
+      {/* Hidden on mobile while a game runs (immersive) — exit via the Close
+          button on the player's control bar. Always shown on desktop. */}
       <button onClick={() => navigate('/')}
-        className="flex items-center gap-1.5 text-stake-text hover:text-white text-sm mb-4">
+        className={`items-center gap-1.5 text-stake-text hover:text-white text-sm mb-4 ${iframeSrc ? 'hidden lg:flex' : 'flex'}`}>
         <ArrowLeft className="w-4 h-4" /> Back to lobby
       </button>
 
